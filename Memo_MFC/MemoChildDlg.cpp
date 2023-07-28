@@ -10,9 +10,8 @@
 
 //--------------------------
 CWnd* pWnd;
-CMenu* pMenu;
+//CMenu* pMenu;
 //int MenuBar_Height;
-bool editflag=false;
 //--------------------------
 
 
@@ -45,9 +44,57 @@ BOOL MemoChildDlg::OnInitDialog()
 	// TODO: 初期化をここに追加します。
 	pWnd = this;
 	HWND hWnd = pWnd->GetSafeHwnd();
-	pMenu = pWnd->GetMenu();
-	//CRect menuRect;
-	//GetClientRect(&menuRect);
+
+
+
+	
+	menubar.CreateMenu();
+	menuSet.CreateMenu();
+
+	//背景色
+	menuBGcolor.CreatePopupMenu();
+	menuBGcolor.AppendMenu(MF_STRING, ID_SETTING_BGCOLOR_1, L"赤色");
+	menuBGcolor.AppendMenu(MF_STRING, ID_SETTING_BGCOLOR_2, L"青色");
+	menuBGcolor.AppendMenu(MF_STRING, ID_SETTING_BGCOLOR_3, L"黄色");
+	menuBGcolor.AppendMenu(MF_STRING, ID_SETTING_BGCOLOR_4, L"緑色");
+	menuBGcolor.AppendMenu(MF_STRING, ID_SETTING_BGCOLOR_5, L"白色");
+	menuBGcolor.AppendMenu(MF_STRING, ID_SETTING_BGCOLOR_6, L"黒色");
+
+	//文字色
+	menuTXcolor.CreatePopupMenu();
+	menuTXcolor.AppendMenu(MF_STRING, ID_SETTING_TCOLOR_1, L"赤色");
+	menuTXcolor.AppendMenu(MF_STRING, ID_SETTING_TCOLOR_2, L"青色");
+	menuTXcolor.AppendMenu(MF_STRING, ID_SETTING_TCOLOR_3, L"黄色");
+	menuTXcolor.AppendMenu(MF_STRING, ID_SETTING_TCOLOR_4, L"緑色");
+	menuTXcolor.AppendMenu(MF_STRING, ID_SETTING_TCOLOR_5, L"白色");
+	menuTXcolor.AppendMenu(MF_STRING, ID_SETTING_TCOLOR_6, L"黒色");
+	
+	//文字サイズ
+	menuTXsize.CreatePopupMenu();
+	menuTXsize.AppendMenu(MF_STRING, ID_SETTING_TSIZE_1, L"8");
+	menuTXsize.AppendMenu(MF_STRING, ID_SETTING_TSIZE_2, L"10");
+	menuTXsize.AppendMenu(MF_STRING, ID_SETTING_TSIZE_3, L"12");
+	menuTXsize.AppendMenu(MF_STRING, ID_SETTING_TSIZE_4, L"14");
+	menuTXsize.AppendMenu(MF_STRING, ID_SETTING_TSIZE_5, L"16");
+	menuTXsize.AppendMenu(MF_STRING, ID_SETTING_TSIZE_6, L"18");
+	menuTXsize.AppendMenu(MF_STRING, ID_SETTING_TSIZE_7, L"20");
+	menuTXsize.AppendMenu(MF_STRING, ID_SETTING_TSIZE_8, L"22");
+	menuTXsize.AppendMenu(MF_STRING, ID_SETTING_TSIZE_9, L"24");
+	menuTXsize.AppendMenu(MF_STRING, ID_SETTING_TSIZE_10, L"26");
+
+	//各メニューをセット
+	menuSet.AppendMenu(MF_POPUP, (UINT_PTR)menuBGcolor.m_hMenu, L"背景色");
+	menuSet.AppendMenu(MF_POPUP, (UINT_PTR)menuTXcolor.m_hMenu, L"文字色");
+	menuSet.AppendMenu(MF_POPUP, (UINT_PTR)menuTXsize.m_hMenu, L"文字サイズ");
+	menuSet.AppendMenu(MF_STRING, ID_SETTING_END, L"終了");
+
+	menubar.AppendMenu(MF_POPUP, (UINT_PTR)menuSet.m_hMenu, L"設定");
+
+	SetMenu(&menubar);
+
+
+	//pMenu = pWnd->GetMenu();
+
 
 	//ModifyStyle(WS_BORDER, 0);
 
@@ -81,6 +128,7 @@ BEGIN_MESSAGE_MAP(MemoChildDlg, CDialogEx)
 	ON_WM_SIZE()
 	ON_COMMAND_RANGE(ID_SETTING_BGCOLOR_0, ID_SETTING_END,&MemoChildDlg::OnMenuComand)
 	ON_WM_CTLCOLOR()
+	ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -93,7 +141,10 @@ void MemoChildDlg::OnEnSetfocusMemoEdit()
 	//ModifyStyle(0, WS_BORDER);
 	ModifyStyle(0, WS_CAPTION);
 	//ModifyStyle(0, WS_BORDER);
-	pWnd->SetMenu(pMenu); // メニューバーを表示する
+
+
+	SetMenu(&menubar);
+	//pWnd->SetMenu(pMenu); // メニューバーを表示する
 	
 }
 
@@ -103,7 +154,7 @@ void MemoChildDlg::OnEnKillfocusMemoEdit()
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
 	//ModifyStyle(WS_BORDER, 0);
 	ModifyStyle(WS_CAPTION, 0);
-	pWnd->SetMenu(NULL); // メニューバーを非表示にする
+	SetMenu(NULL); // メニューバーを非表示にする
 	//DrawMenuBar();
 
 }
@@ -124,6 +175,7 @@ void MemoChildDlg::OnSize(UINT nType, int cx, int cy)
 	{
 		//最初からアクティブにしてるとm_MemoEdit==NULLのときにエラー落ち
 		m_MemoEdit.MoveWindow(&menuRect);
+		
 		
 	}
 	
@@ -238,4 +290,29 @@ HBRUSH MemoChildDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	}
 
 	return hbr;
+}
+void MemoChildDlg::NotifyParentDialogClosed()
+{
+	CMemoMFCDlg* pParent = static_cast<CMemoMFCDlg*>(GetParent());
+	if (pParent)
+		pParent->OnMemoChildDlgClosed(this); // 親ダイアログに通知
+}
+
+void MemoChildDlg::OnDestroy()
+{
+	CDialogEx::OnDestroy();
+
+	// TODO: ここにメッセージ ハンドラー コードを追加します。
+	// メニューバーを破棄
+	CMenu* pMenu = GetMenu();
+	if (pMenu)
+	{
+		pMenu->DestroyMenu();
+		//menuBGcolor.DestroyMenu();
+		//menuTXcolor.DestroyMenu();
+		//menuTXsize.DestroyMenu();
+		//menuSet.DestroyMenu();
+		//menubar.DestroyMenu();
+		SetMenu(nullptr);
+	}
 }

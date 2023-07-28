@@ -11,7 +11,7 @@ class MemoChildDlg : public CDialogEx
 public:
 	MemoChildDlg(CWnd* pParent = nullptr);   // 標準コンストラクター
 	virtual ~MemoChildDlg();
-
+	void NotifyParentDialogClosed();
 // ダイアログ データ
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_CHILD_MEMO };
@@ -37,5 +37,11 @@ public:
 	CBrush Edit_BGcolor;		//エディットコントロール背景色
 	CFont Memofont;				//フォント
 	int Edit_Fontsize;			//フォントサイズ
-	
+	bool editflag = false;
+	CMenu menubar;
+	CMenu menuSet;
+	CMenu menuBGcolor;
+	CMenu menuTXcolor;
+	CMenu menuTXsize;
+	afx_msg void OnDestroy();
 };

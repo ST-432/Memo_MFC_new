@@ -7,7 +7,7 @@
 #include "Memo_MFC.h"
 #include "Memo_MFCDlg.h"
 #include "afxdialogex.h"
-#include "MemoChildDlg.h"
+
 
 
 #ifdef _DEBUG
@@ -57,6 +57,15 @@ CMemoMFCDlg::CMemoMFCDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_MEMO_MFC_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+}
+
+CMemoMFCDlg::~CMemoMFCDlg()
+{
+	//// CArray内の全てのMemoChildDlgのインスタンスを削除
+	//for (int i = 0; i < m_MemoDialogArray.GetSize(); i++)
+	//{
+	//	delete m_MemoDialogArray[i];
+	//}
 }
 
 void CMemoMFCDlg::DoDataExchange(CDataExchange* pDX)
@@ -168,6 +177,29 @@ void CMemoMFCDlg::OnBnClickedButton1()
 	//int x = dlg.DoModal();
 	//MemoChildDlg ch;
 	MemoChildDlg* pDlgB = new MemoChildDlg(this);
-	bool B=pDlgB->Create(IDD_CHILD_MEMO, this);
-	pDlgB->ShowWindow(SW_SHOW);
+	if (pDlgB->Create(IDD_CHILD_MEMO, this))
+	{
+		// MemoChildDlgが正常にCreateされた場合
+		m_MemoDialogArray.Add(pDlgB); // ポインタをCPtrArrayに追加
+		pDlgB->ShowWindow(SW_SHOW);   // MemoChildDlgを表示
+	}
+	else
+	{
+		// Createに失敗した場合のエラー処理
+		delete pDlgB; // メモリリークを防ぐために削除する
+	}
+	//m_MemoDialogArray.Add(pDlgB);
+	//bool B=pDlgB->Create(IDD_CHILD_MEMO, this);
+	//pDlgB->ShowWindow(SW_SHOW);
+}
+void CMemoMFCDlg::OnMemoChildDlgClosed(MemoChildDlg* pClosedDialog)
+{
+	for (int i = 0; i < m_MemoDialogArray.GetSize(); i++)
+	{
+		if (m_MemoDialogArray[i] == pClosedDialog)
+		{
+			m_MemoDialogArray.RemoveAt(i);
+			break;
+		}
+	}
 }

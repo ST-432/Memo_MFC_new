@@ -1,7 +1,7 @@
 ﻿
 // Memo_MFCDlg.h : ヘッダー ファイル
 //
-
+#include "MemoChildDlg.h"
 #pragma once
 
 
@@ -11,6 +11,11 @@ class CMemoMFCDlg : public CDialogEx
 // コンストラクション
 public:
 	CMemoMFCDlg(CWnd* pParent = nullptr);	// 標準コンストラクター
+
+//デストラクタ	
+	virtual ~CMemoMFCDlg();
+
+	void CMemoMFCDlg::OnMemoChildDlgClosed(MemoChildDlg* pClosedDialog);
 
 // ダイアログ データ
 #ifdef AFX_DESIGN_TIME
@@ -31,6 +36,10 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+
+protected:
+	CPtrArray  m_MemoDialogArray; // MemoChildDlgを保持するCArray
+
 public:
 	afx_msg void OnBnClickedButton1();
 };
