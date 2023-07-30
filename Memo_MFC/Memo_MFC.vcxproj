@@ -183,9 +183,9 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Data_memo.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MemoChildDlg.h" />
+    <ClInclude Include="MemoData.h" />
     <ClInclude Include="Memo_MFC.h" />
     <ClInclude Include="Memo_MFCDlg.h" />
     <ClInclude Include="pch.h" />
@@ -193,8 +193,8 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Data_memo.cpp" />
     <ClCompile Include="MemoChildDlg.cpp" />
+    <ClCompile Include="MemoData.cpp" />
     <ClCompile Include="Memo_MFC.cpp" />
     <ClCompile Include="Memo_MFCDlg.cpp" />
     <ClCompile Include="pch.cpp">

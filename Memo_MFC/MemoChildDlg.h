@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "afxdialogex.h"
-
+#include "MemoData.h"
 
 // MemoChildDlg ダイアログ
 
@@ -37,11 +37,16 @@ public:
 	CBrush Edit_BGcolor;		//エディットコントロール背景色
 	CFont Memofont;				//フォント
 	int Edit_Fontsize;			//フォントサイズ
+	CRect Memo_windowRect;		//ウィンドウ位置
+	CString Memotext;
 	bool editflag = false;
+	bool deleteflag = false;	//trueでメニューバーからの終了、iniに書き出しなし
 	CMenu menubar;
 	CMenu menuSet;
 	CMenu menuBGcolor;
 	CMenu menuTXcolor;
 	CMenu menuTXsize;
+	MemoData data_M;
+
 	afx_msg void OnDestroy();
 };

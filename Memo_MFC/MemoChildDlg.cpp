@@ -113,12 +113,22 @@ BOOL MemoChildDlg::OnInitDialog()
 
 
 	//----------------------------------------------------------------------------
-	Edit_Fontsize = 120;
-	Edit_BGcolor.CreateSolidBrush(RGB(255, 255, 255));	// エディットコントロール背景(黒)
-	EditText_BGcolor = RGB(255, 255, 255);	// テキストバックグラウンド背景
-	EditText_color= RGB(0, 0, 0);		//テキスト色
-	Memofont.CreatePointFont(Edit_Fontsize, _T("Arial"));	//12pt
+	
+	
+	data_M.LoadData();
+	
+	Memo_windowRect= data_M.GetWindowRect();
+	Edit_Fontsize = data_M.GetFontSize();
+	Edit_BGcolor.CreateSolidBrush(data_M.GetBackgroundColor());	// エディットコントロール背景
+	EditText_BGcolor = data_M.GetBackgroundColor();	// テキストバックグラウンド背景
+	EditText_color= data_M.GetTextColor();		//テキスト色
+	Memotext = data_M.GetText();				//メモの内容
+	Memofont.CreatePointFont(Edit_Fontsize, _T("Arial"));	//フォントサイズ
 
+	SetWindowPos(nullptr, Memo_windowRect.left, Memo_windowRect.top, Memo_windowRect.Width(), Memo_windowRect.Height(), SWP_NOZORDER);
+	m_MemoEdit.SetWindowTextW(Memotext);
+	m_MemoEdit.SetFont(&Memofont);
+	m_MemoEdit.Invalidate();	//エディットコントロールの再描画
 	return TRUE;
 }
 
@@ -265,6 +275,7 @@ void MemoChildDlg::OnMenuComand(UINT nID)
 		
 		break;
 	case ID_SETTING_END:
+		deleteflag = true;
 		OnCancel();
 		break;
 		// 他のメニューアイテムに対する処理をここに追加します
@@ -304,6 +315,21 @@ void MemoChildDlg::OnDestroy()
 
 	// TODO: ここにメッセージ ハンドラー コードを追加します。
 	// メニューバーを破棄
+	if (deleteflag == false)
+	{
+		//設定をiniに保存
+		m_MemoEdit.GetWindowText(Memotext);
+		data_M.SetText(Memotext);					//テキスト
+		GetWindowRect(&Memo_windowRect);
+		data_M.SetWindowRect(Memo_windowRect);		//ウィンドウサイズ
+		data_M.SetFontSize(Edit_Fontsize);			//フォントサイズ
+		data_M.SetTextColor(EditText_color);		//テキストカラー
+		data_M.SetBackgroundColor(EditText_BGcolor);//バックグラウンドカラー
+
+
+		data_M.SaveData();
+
+	}
 	CMenu* pMenu = GetMenu();
 	if (pMenu)
 	{
@@ -315,4 +341,5 @@ void MemoChildDlg::OnDestroy()
 		//menubar.DestroyMenu();
 		SetMenu(nullptr);
 	}
+	NotifyParentDialogClosed();
 }
