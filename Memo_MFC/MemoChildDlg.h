@@ -9,7 +9,7 @@ class MemoChildDlg : public CDialogEx
 	DECLARE_DYNAMIC(MemoChildDlg)
 
 public:
-	MemoChildDlg(CWnd* pParent = nullptr);   // 標準コンストラクター
+	MemoChildDlg(int number, CWnd* pParent = nullptr);   // 標準コンストラクター
 	virtual ~MemoChildDlg();
 	void NotifyParentDialogClosed();
 // ダイアログ データ
@@ -23,7 +23,7 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 	virtual BOOL OnInitDialog();
 	virtual void OnCancel();
-
+	int m_number;	//メモの番号
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnEnSetfocusMemoEdit();
@@ -38,7 +38,7 @@ public:
 	CFont Memofont;				//フォント
 	int Edit_Fontsize;			//フォントサイズ
 	CRect Memo_windowRect;		//ウィンドウ位置
-	CString Memotext;
+	CString Memotext;			//メモの内容
 	bool editflag = false;
 	bool deleteflag = false;	//trueでメニューバーからの終了、iniに書き出しなし
 	CMenu menubar;

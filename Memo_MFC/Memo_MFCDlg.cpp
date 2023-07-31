@@ -7,7 +7,7 @@
 #include "Memo_MFC.h"
 #include "Memo_MFCDlg.h"
 #include "afxdialogex.h"
-
+#include"MemoData.h"
 
 
 #ifdef _DEBUG
@@ -114,6 +114,41 @@ BOOL CMemoMFCDlg::OnInitDialog()
 
 	// TODO: 初期化をここに追加します。
 
+	//前回保存してあるiniファイルからメモを作成。(iniファイルの個数分)
+	CString name = _T("MemoData");
+	CString num = _T("");
+	CString ex = _T(".ini");
+	CString exePath;
+	::GetModuleFileName(NULL, exePath.GetBuffer(MAX_PATH), MAX_PATH);
+	exePath.ReleaseBuffer();
+	int pos = exePath.ReverseFind('\\');
+	CFileFind finder;
+	for (int i = 0; i < MAX_MEMO; i++)
+	{
+		num.Format(_T("%d"), i+1);
+		CString iniPath = exePath.Left(pos + 1) + name+ num+ ex;
+		if (finder.FindFile(iniPath))
+		{
+			MemoChildDlg* pDlgB = new MemoChildDlg(i + 1, this);
+			if (pDlgB->Create(IDD_CHILD_MEMO, this))
+			{
+				// MemoChildDlgが正常にCreateされた場合
+				m_MemoDialogArray.Add(pDlgB); // ポインタをCPtrArrayに追加
+				pDlgB->ShowWindow(SW_SHOW);   // MemoChildDlgを表示
+			}
+			else
+			{
+				// Createに失敗した場合のエラー処理
+				delete pDlgB; // メモリリークを防ぐために削除する
+			}
+		}
+		else
+		{
+			//ない場合はスルー
+		}
+
+	}
+
 
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -172,28 +207,51 @@ HCURSOR CMemoMFCDlg::OnQueryDragIcon()
 void CMemoMFCDlg::OnBnClickedButton1()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
-	//child.DoModal(); // ダイアログBを表示
-	//MemoChildDlg dlg;
-	//int x = dlg.DoModal();
-	//MemoChildDlg ch;
-	MemoChildDlg* pDlgB = new MemoChildDlg(this);
-	if (pDlgB->Create(IDD_CHILD_MEMO, this))
+
+	//保存してある番号以外でiniファイルを作成
+	CString name = _T("MemoData");
+	CString num = _T("");
+	CString ex = _T(".ini");
+	CString exePath;
+	::GetModuleFileName(NULL, exePath.GetBuffer(MAX_PATH), MAX_PATH);
+	exePath.ReleaseBuffer();
+	int pos = exePath.ReverseFind('\\');
+	CFileFind finder;
+	for (int i = 0; i < MAX_MEMO; i++)
 	{
-		// MemoChildDlgが正常にCreateされた場合
-		m_MemoDialogArray.Add(pDlgB); // ポインタをCPtrArrayに追加
-		pDlgB->ShowWindow(SW_SHOW);   // MemoChildDlgを表示
+		num.Format(_T("%d"), i + 1);
+		CString iniPath = exePath.Left(pos + 1) + name + num + ex;
+		if (finder.FindFile(iniPath))
+		{
+			//ある場合は上書きになってしまうのでスルー
+			if (i == MAX_MEMO - 1)
+			{
+				//メモがMAX_MEMO分すでに存在している場合は作らせない
+				AfxMessageBox(_T("メモの個数が上限値です(5)"));
+			}
+		}
+		else
+		{
+			MemoChildDlg* pDlgB = new MemoChildDlg(i + 1, this);
+			if (pDlgB->Create(IDD_CHILD_MEMO, this))
+			{
+				// MemoChildDlgが正常にCreateされた場合
+				m_MemoDialogArray.Add(pDlgB); // ポインタをCPtrArrayに追加
+				pDlgB->ShowWindow(SW_SHOW);   // MemoChildDlgを表示
+			}
+			else
+			{
+				// Createに失敗した場合のエラー処理
+				delete pDlgB; // メモリリークを防ぐために削除する
+			}
+			break;
+		}
+
 	}
-	else
-	{
-		// Createに失敗した場合のエラー処理
-		delete pDlgB; // メモリリークを防ぐために削除する
-	}
-	//m_MemoDialogArray.Add(pDlgB);
-	//bool B=pDlgB->Create(IDD_CHILD_MEMO, this);
-	//pDlgB->ShowWindow(SW_SHOW);
 }
 void CMemoMFCDlg::OnMemoChildDlgClosed(MemoChildDlg* pClosedDialog)
 {
+	//リークが起きないようにMemoChildDlg削除時通知が来てリストから削除
 	for (int i = 0; i < m_MemoDialogArray.GetSize(); i++)
 	{
 		if (m_MemoDialogArray[i] == pClosedDialog)

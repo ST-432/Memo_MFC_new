@@ -19,8 +19,8 @@ CWnd* pWnd;
 
 IMPLEMENT_DYNAMIC(MemoChildDlg, CDialogEx)
 
-MemoChildDlg::MemoChildDlg(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_CHILD_MEMO, pParent)
+MemoChildDlg::MemoChildDlg(int number, CWnd* pParent /*=nullptr*/)
+	: CDialogEx(IDD_CHILD_MEMO, pParent),m_number(number)
 {
 	
 }
@@ -47,7 +47,7 @@ BOOL MemoChildDlg::OnInitDialog()
 
 
 
-	
+	//メニューバーの作成
 	menubar.CreateMenu();
 	menuSet.CreateMenu();
 
@@ -92,31 +92,23 @@ BOOL MemoChildDlg::OnInitDialog()
 
 	SetMenu(&menubar);
 
-
-	//pMenu = pWnd->GetMenu();
-
-
-	//ModifyStyle(WS_BORDER, 0);
-
-	//pWnd->SetMenu(NULL); // メニューバーを非表示にする
 	if (m_MemoEdit)
 	{
 		editflag = true;
 	}
-
-
 	// ウィンドウスタイルを設定するコード
 	ModifyStyle(0, WS_CAPTION);
 
-	// フレームスタイルを設定するコード
-	//ModifyStyleEx(0, WS_EX_DLGMODALFRAME);
-
-
-	//----------------------------------------------------------------------------
-	
-	
+	//親ダイアログから送られてきた番号でiniファイルを作成
+	CString name = _T("MemoData");
+	CString num = _T("");
+	num.Format(_T("%d"), m_number);
+	CString ex = _T(".ini");
+	MemoData A(name+ num+ ex);
+	data_M = A;
+	//iniファイルから設定のロード
 	data_M.LoadData();
-	
+	//メンバ変数にコピー
 	Memo_windowRect= data_M.GetWindowRect();
 	Edit_Fontsize = data_M.GetFontSize();
 	Edit_BGcolor.CreateSolidBrush(data_M.GetBackgroundColor());	// エディットコントロール背景
@@ -148,24 +140,16 @@ END_MESSAGE_MAP()
 void MemoChildDlg::OnEnSetfocusMemoEdit()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
-	//ModifyStyle(0, WS_BORDER);
 	ModifyStyle(0, WS_CAPTION);
-	//ModifyStyle(0, WS_BORDER);
-
-
 	SetMenu(&menubar);
-	//pWnd->SetMenu(pMenu); // メニューバーを表示する
-	
 }
 
 
 void MemoChildDlg::OnEnKillfocusMemoEdit()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
-	//ModifyStyle(WS_BORDER, 0);
 	ModifyStyle(WS_CAPTION, 0);
 	SetMenu(NULL); // メニューバーを非表示にする
-	//DrawMenuBar();
 
 }
 void MemoChildDlg::OnCancel()
@@ -275,6 +259,7 @@ void MemoChildDlg::OnMenuComand(UINT nID)
 		
 		break;
 	case ID_SETTING_END:
+		//終了選択時iniファイルごと削除
 		deleteflag = true;
 		OnCancel();
 		break;
@@ -317,7 +302,7 @@ void MemoChildDlg::OnDestroy()
 	// メニューバーを破棄
 	if (deleteflag == false)
 	{
-		//設定をiniに保存
+		//設定をiniに保存　メンバ変数を
 		m_MemoEdit.GetWindowText(Memotext);
 		data_M.SetText(Memotext);					//テキスト
 		GetWindowRect(&Memo_windowRect);
@@ -326,19 +311,17 @@ void MemoChildDlg::OnDestroy()
 		data_M.SetTextColor(EditText_color);		//テキストカラー
 		data_M.SetBackgroundColor(EditText_BGcolor);//バックグラウンドカラー
 
-
 		data_M.SaveData();
-
+	}
+	else
+	{
+		//iniファイルの消去
+		data_M.Deleteini();
 	}
 	CMenu* pMenu = GetMenu();
 	if (pMenu)
 	{
 		pMenu->DestroyMenu();
-		//menuBGcolor.DestroyMenu();
-		//menuTXcolor.DestroyMenu();
-		//menuTXsize.DestroyMenu();
-		//menuSet.DestroyMenu();
-		//menubar.DestroyMenu();
 		SetMenu(nullptr);
 	}
 	NotifyParentDialogClosed();

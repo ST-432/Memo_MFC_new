@@ -4,7 +4,21 @@
 MemoData::MemoData()
 {
     // ファイル名を指定
-    m_fileName = _T("MemoData.ini");
+    m_fileName = _T("");
+}
+
+MemoData::MemoData(CString filename)
+{
+    //iniのパスをメンバ変数に登録
+    CString exePath;
+    ::GetModuleFileName(NULL, exePath.GetBuffer(MAX_PATH), MAX_PATH);
+    exePath.ReleaseBuffer();
+    int pos = exePath.ReverseFind('\\');
+    CString iniPath = exePath.Left(pos + 1) + filename;
+    m_fileName = iniPath;
+    //iniファイルが存在しているかチェック、存在していない場合は新規作成
+    CheckAndCreateIniFile();
+    
 }
 
 MemoData::~MemoData()
@@ -29,14 +43,14 @@ void MemoData::LoadData()
 {
     m_windowRect.left = GetPrivateProfileInt(_T("Window"), _T("Left"), 0);
     m_windowRect.top = GetPrivateProfileInt(_T("Window"), _T("Top"), 0);
-    int width = GetPrivateProfileInt(_T("Window"), _T("Width"), 400);
-    int height = GetPrivateProfileInt(_T("Window"), _T("Height"), 300);
+    int width = GetPrivateProfileInt(_T("Window"), _T("Width"), 300);
+    int height = GetPrivateProfileInt(_T("Window"), _T("Height"), 200);
     m_windowRect.right = m_windowRect.left + width;
     m_windowRect.bottom = m_windowRect.top + height;
 
     m_fontSize = GetPrivateProfileInt(_T("Font"), _T("Size"), 80);
-    m_textColor = GetPrivateProfileColor(_T("Font"), _T("Color"), RGB(0, 100, 0)); // Default: Black
-    m_backgroundColor = GetPrivateProfileColor(_T("Background"), _T("Color"), RGB(255, 255, 50)); // Default: White
+    m_textColor = GetPrivateProfileColor(_T("Font"), _T("Color"), RGB(0, 0, 0)); // Default: Black
+    m_backgroundColor = GetPrivateProfileColor(_T("Background"), _T("Color"), RGB(255, 255, 255)); // Default: White
 
     m_text = GetPrivateProfileCString(_T("Text"), _T("Content"), _T("Sample"));
 }
@@ -116,11 +130,12 @@ COLORREF MemoData::GetPrivateProfileColor(LPCTSTR lpAppName, LPCTSTR lpKeyName, 
     ::GetPrivateProfileString(lpAppName, lpKeyName, _T(""), buffer, sizeof(buffer) / sizeof(buffer[0]), m_fileName);
     if (lstrlen(buffer) != 6)
         return defaultColor;
-
-    BYTE r = _tcstoul(buffer + 0, NULL, 16);
-    BYTE g = _tcstoul(buffer + 2, NULL, 16);
-    BYTE b = _tcstoul(buffer + 4, NULL, 16);
-    return RGB(r, g, b);
+    unsigned int colorCodeInt = HexStringToUInt(buffer);
+    //16進数から10進数に
+    int red = (colorCodeInt >> 16) & 0xFF;
+    int green = (colorCodeInt >> 8) & 0xFF;
+    int blue = colorCodeInt & 0xFF;
+    return RGB(red, green, blue);
 }
 
 BOOL MemoData::WritePrivateProfileCString(LPCTSTR lpAppName, LPCTSTR lpKeyName, const CString& str)
@@ -130,7 +145,60 @@ BOOL MemoData::WritePrivateProfileCString(LPCTSTR lpAppName, LPCTSTR lpKeyName, 
 
 CString MemoData::GetPrivateProfileCString(LPCTSTR lpAppName, LPCTSTR lpKeyName, LPCTSTR lpDefault)
 {
-    TCHAR buffer[256];
+    TCHAR buffer[512];
     ::GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, buffer, sizeof(buffer) / sizeof(buffer[0]), m_fileName);
     return buffer;
+}
+
+BOOL MemoData::FileExists(const CString& filePath)
+{
+    CFileFind finder;
+    return finder.FindFile(filePath);
+}
+
+BOOL MemoData::CreateIniFile(const CString& filePath)
+{
+    CStdioFile file;
+    if (file.Open(filePath, CFile::modeCreate | CFile::modeWrite))
+    {
+        //新規作成後閉じる
+        file.Close();
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void MemoData::CheckAndCreateIniFile()
+{
+    if (FileExists(m_fileName))
+    {
+        // iniファイルが存在する場合の処理
+    }
+    else
+    {
+        // iniファイルが存在しない場合の処理
+        if (CreateIniFile(m_fileName))
+        {
+            // iniファイルの作成に成功した場合の処理
+        }
+        else
+        {
+            // iniファイルの作成に失敗した場合の処理
+        }
+    }
+}
+
+
+
+// TCHARを使用して16進数の文字列を整数に変換
+unsigned int MemoData::HexStringToUInt(const TCHAR* hexString)
+{
+    unsigned int result = 0;
+    _stscanf_s(hexString, _T("%x"), &result);
+    return result;
+}
+
+void MemoData::Deleteini()
+{
+    CFile::Remove(m_fileName);
 }
